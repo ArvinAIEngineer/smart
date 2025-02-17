@@ -27,8 +27,9 @@ groq_client = Groq()
 
 # Function to format lesson plans properly
 def format_lesson_plan(plan_text):
-    """Convert asterisks (*) into Markdown bold and format lists properly."""
-    plan_text = re.sub(r"\*{2}(.*?)\*{2}", r"**\1**", plan_text)  # Ensure double asterisks stay bold
+    """Format lesson plans with proper Markdown."""
+    plan_text = re.sub(r"\*\*Topic:\*\*-(.*?)\n", r"\n### **Topic:** \1\n", plan_text)  # Format Topic
+    plan_text = re.sub(r"\*\*Subtopic:\*\*-(.*?)\n", r"\n#### **Subtopic:** \1\n", plan_text)  # Format Subtopic
     plan_text = plan_text.replace("* ", "- ")  # Convert bullet points to Markdown lists
     return plan_text
 
