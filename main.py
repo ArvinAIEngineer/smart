@@ -91,7 +91,6 @@ if option == "Generate Plan":
             refined_plan = chat_completion.choices[0].message.content
             formatted_plan = format_lesson_plan(refined_plan)  # Apply formatting
             
-            st.write("### Adapted Lesson Plan")
             st.markdown(formatted_plan, unsafe_allow_html=True)
 
         else:
