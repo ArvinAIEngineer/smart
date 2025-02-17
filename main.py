@@ -4,6 +4,7 @@ from educhain import Educhain, LLMConfig
 from dotenv import load_dotenv
 import os
 from groq import Groq  # Importing Groq's client
+import re  # For text formatting
 
 # Load environment variables
 load_dotenv()
@@ -24,6 +25,13 @@ client = Educhain(groq_config)
 # Initialize Groq's API client
 groq_client = Groq()
 
+# Function to format lesson plans properly
+def format_lesson_plan(plan_text):
+    """Convert asterisks (*) into Markdown bold and format lists properly."""
+    plan_text = re.sub(r"\*{2}(.*?)\*{2}", r"**\1**", plan_text)  # Ensure double asterisks stay bold
+    plan_text = plan_text.replace("* ", "- ")  # Convert bullet points to Markdown lists
+    return plan_text
+
 # Streamlit App
 st.title("Smartstudybot.ai")
 
@@ -43,16 +51,16 @@ if option == "Generate Plan":
             # Step 1: Get raw lesson plan from Educhain
             raw_plan = client.content_engine.generate_lesson_plan(topic=topic)
 
-            # Check the actual attributes of raw_plan
+            # Extract lesson plan text properly
             if hasattr(raw_plan, 'dict'):
-                raw_plan_content = raw_plan.dict()  # Convert to dictionary if it's a Pydantic model
+                raw_plan_content = raw_plan.dict()
             elif hasattr(raw_plan, 'content'):
-                raw_plan_content = raw_plan.content  # If content is a direct attribute
+                raw_plan_content = raw_plan.content
             elif hasattr(raw_plan, 'plan'):
-                raw_plan_content = raw_plan.plan  # If stored as `plan`
+                raw_plan_content = raw_plan.plan
             else:
-                raw_plan_content = str(raw_plan)  # Fallback: Convert the object to a string
-            
+                raw_plan_content = str(raw_plan)
+
             # Step 2: Refine the plan with Groq
             prompt = f"""
             You are a helpful assistant. Adapt the following lesson plan for {num_days} days at a {difficulty} difficulty level.
@@ -80,8 +88,10 @@ if option == "Generate Plan":
 
             # Step 3: Display the formatted lesson plan
             refined_plan = chat_completion.choices[0].message.content
+            formatted_plan = format_lesson_plan(refined_plan)  # Apply formatting
+            
             st.write("### Adapted Lesson Plan")
-            st.text(refined_plan)
+            st.markdown(formatted_plan, unsafe_allow_html=True)
 
         else:
             st.warning("Please enter a topic.")
